@@ -38,7 +38,6 @@ def main():
             
             #Lerr datos de camara web
             data,frame = capture.read()
-            print(frame.shape)
             
             #cambios de color y aplicar módulo holistic
             image= cv.cvtColor(frame,cv.COLOR_RGB2BGR)
