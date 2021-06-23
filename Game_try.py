@@ -6,10 +6,8 @@ Created on Mon Jun 21 22:47:12 2021
 """
 
 import pygame as py
-import Mano as video
-import cv2 as cv
 
-
+movement=0
 WIDHT, HEIGHT = 700, 700
 screen=py.display.set_mode([WIDHT,HEIGHT])
 py.display.set_caption("Rehab Videogame")
@@ -25,14 +23,14 @@ class bee:
     def __init__(self):
     
         self.img=bee_image
-        self.velocity=50
+        self.velocity=5
         self.pos_x=100
-        self.pos_y=300
+        self.pos_y=100
         
     def update(self,user_movement):
-        if user_movement >= 25000:
+        if user_movement >= 1 and self.pos_y>0:
             self.pos_y -= self.velocity
-        else:
+        elif user_movement < 1 and self.pos_y < 700:
             self.pos_y += self.velocity
         
     def draw (self,screen):
@@ -42,23 +40,22 @@ class bee:
 
 
 def main():
-    
     player=bee()
     clock=py.time.Clock()
     run = True
     
-    while run:
+    while run: 
         clock.tick(fps)
-        x=video.main()
         for event in py.event.get():
             if event.type == py.QUIT:
                 run = False
-         
-        player.update(x)
-        player.draw(screen)
-             
+        player.draw(screen)  
+        player.update(movement)
+        
+        
     py.quit()
-   
+
+  
 if __name__=="__main__":
     main() 
       
