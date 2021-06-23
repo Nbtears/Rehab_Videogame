@@ -18,7 +18,10 @@ bee_width=55
 bee_height=55
 bee_image=py.image.load('secondbee.png')
 bee_image=py.transform.scale(bee_image,(bee_width,bee_height))
+star_image=py.image.load('star.png')
+star_image=py.transform.scale(star_image,(bee_width,bee_height))
 fps=60
+stars=[]
 
 def angle_calculate(a,b,c):
     
@@ -62,9 +65,9 @@ def process(frame,mp_drawing,mp_holistic,holistic):
                              cv.FONT_HERSHEY_SIMPLEX,0.5,(255,255,255),2,cv.LINE_AA)
             
             #repetitions
-            if angle>140:
+            if angle>120:
                 stage = 0
-            elif angle <=50:
+            elif angle <=60:
                 stage = 1
             
     except:
@@ -97,10 +100,28 @@ class bee:
         screen.fill(back_color)
         screen.blit(self.img, (self.pos_x,self.pos_y))
         py.display.update() 
+        
+class star:
+    def __init__(self):
+        self.image=star_image
+        self.pos_x = WIDHT+np.random.randint(10,600)
+        self.pos_y=np.random.randint(10, 600)
+        self.width = self.image.get_width()
+              
+    def update(self):
+        self.pos_x -=10
+        if self.pos_x < -self.width:
+            self.pos_x = WIDHT + np.random.randint(10, 900)
+            self.pos_y =np.random.randint(10, 600)
+    
+    def draw(self,screen):
+        screen.blit(self.image, (self.pos_x,self.pos_y))
+        py.display.update()
 
 
 def main():
     player=bee()
+    for i in range(3): stars.append(star())
     clock=py.time.Clock()
     run = True
     capture =cv.VideoCapture(0)
@@ -117,6 +138,9 @@ def main():
                     run = False
             player.draw(screen)  
             player.update(stage)
+            for i in range(3): 
+                stars[i].draw(screen)
+                stars[i].update()
             cv.imshow('camera',imag)
             
             if cv.waitKey(2) == ord('q'):
