@@ -172,6 +172,7 @@ def game():
    
     py.mixer.init()
     sound_bubble = py.mixer.Sound('sources/blop1.wav')
+    sound_dead = py.mixer.Sound('sources/blood.wav')
     for i in range(4): bubbles.append(bubble())
     
     main_font = py.font.SysFont("comicsans", 40)
@@ -188,11 +189,7 @@ def game():
         screen.blit(back_image,(0,0))
         score_label = main_font.render(f"Score: {score} ",1,(255,255,255))
         screen.blit(score_label,(WIDHT-score_label.get_width()-10,10))
-        if lives <= 0:
-                lost_label = lost_font.render('Game Over',1,(255,255,255))
-                screen.blit(lost_label,(WIDHT/2-lost_label.get_width()/2,300))
-                py.time.delay(3000)
-
+        
         if lives >= 1:
             screen.blit(heart_image,(5,5))
             if lives >= 2:
@@ -211,13 +208,18 @@ def game():
         enemies.draw(screen)
         enemies.update()
         if enemies.collision(player):
-            sound_bubble.play()
+            sound_dead.play()
             enemies.delete()
             lives -= 1
      
         player.draw(screen) 
         player.update(stage)
-       
+        
+        if lives == 0:
+            screen.blit(back_image,(0,0))
+            lost_label = lost_font.render('Game Over',1,(255,255,255))
+            screen.blit(lost_label,(WIDHT/2-lost_label.get_width()/2,300))
+            py.time.wait(3000)     
             
     with mp_holistic.Holistic(min_detection_confidence=0.8,min_tracking_confidence=0.8) as holistic:
         while run: 
@@ -235,10 +237,11 @@ def game():
             
             for event in py.event.get():
                 if event.type == py.QUIT:
+                    py.quit()
+                    capture.release() 
+                    cv.destroyAllWindows() 
                     break
-    capture.release()       
-    
-    
+    capture.release()           
             
 def main():
     title_font = py.font.SysFont("comicsans", 70)
@@ -252,7 +255,7 @@ def main():
     
         for event in py.event.get():
             if event.type == py.MOUSEBUTTONDOWN:
-                game()
+               game()      
             if event.type == py.QUIT:
                 run = False
                 
@@ -260,6 +263,5 @@ def main():
     cv.destroyAllWindows() 
     py.quit()
 
-  
 if __name__=="__main__":
     main()
