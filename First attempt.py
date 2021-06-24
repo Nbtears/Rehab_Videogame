@@ -8,30 +8,30 @@ import numpy as np
 import cv2 as cv
 import pygame as py
 import mediapipe as mp
+py.font.init()
 
-movement=0
+movement = 0
 WIDHT, HEIGHT = 900, 600
-screen=py.display.set_mode([WIDHT,HEIGHT])
+screen = py.display.set_mode([WIDHT,HEIGHT])
 py.display.set_caption("Rehab Videogame")
-back_image=py.image.load("sea3.jpg")
-back_image=py.transform.scale(back_image,(900,600))
-axo_width=40
-axo_height=40
-axo_image=py.image.load('axolote1.png')
-axo_image=py.transform.flip(py.transform.scale(axo_image,(120,120)),True,False)
-bubble_image=py.image.load('buble2.png')
-bubble_image=py.transform.scale(bubble_image,(axo_width,axo_height))
-fps=60
-bubbles=[]
+back_image = py.image.load("sea3.jpg")
+back_image = py.transform.scale(back_image,(900,600))
+bubble_dimesion = 30
+axo_dimension = 100
+axo_image = py.image.load('axolote1.png')
+axo_image = py.transform.flip(py.transform.scale(axo_image,(axo_dimension,axo_dimension)),True,False)
+bubble_image = py.image.load('buble2.png')
+bubble_image = py.transform.scale(bubble_image,(bubble_dimesion,bubble_dimesion))
+
 
 def angle_calculate(a,b,c):
     
-    a=np.array(a)
-    b=np.array(b)
-    c=np.array(c)
+    a = np.array(a)
+    b = np.array(b)
+    c = np.array(c)
     
-    radians=np.arctan2(c[1]-b[1],c[0]-b[0]) - np.arctan2(a[1]-b[1],a[0]-b[0])
-    angle=np.abs(radians*180.0/np.pi)
+    radians = np.arctan2(c[1]-b[1],c[0]-b[0]) - np.arctan2(a[1]-b[1],a[0]-b[0])
+    angle = np.abs(radians*180.0/np.pi)
     
     if angle > 180.0:
         angle=360-angle
@@ -41,13 +41,13 @@ def angle_calculate(a,b,c):
 def process(frame,mp_drawing,mp_holistic,holistic):
     stage = None
     #cambios de color y aplicar módulo holistic
-    image= cv.cvtColor(frame,cv.COLOR_RGB2BGR)
-    result=holistic.process(image)
-    image= cv.cvtColor(image,cv.COLOR_BGR2RGB)
+    image = cv.cvtColor(frame,cv.COLOR_RGB2BGR)
+    result = holistic.process(image)
+    image = cv.cvtColor(image,cv.COLOR_BGR2RGB)
             
     #Landmarks
     try: 
-            landmarks=result.pose_landmarks.landmark
+            landmarks = result.pose_landmarks.landmark
             
             #coordenadas de brazo izq
             shoulder = [landmarks[mp_holistic.PoseLandmark.LEFT_SHOULDER.value].x,
@@ -86,63 +86,94 @@ class axolote:
 
     def __init__(self):
     
-        self.img=axo_image
-        self.velocity=30
-        self.pos_x=100
-        self.pos_y=100
+        self.img = axo_image
+        self.velocity = 30
+        self.pos_x = 100
+        self.pos_y = 100
+        self.mask = py.mask.from_surface(self.img)
         
     def update(self,user_movement):
-        if user_movement == 1 and self.pos_y>10:
+        if user_movement == 1 and self.pos_y - self.velocity > 0:
             self.pos_y -= self.velocity
-        elif user_movement == 0 and self.pos_y <=630:
+        elif user_movement == 0 and self.pos_y + self.velocity + axo_dimension < HEIGHT:
             self.pos_y += self.velocity
         
     def draw (self,screen):
-        screen.blit(back_image,(0,0))
         screen.blit(self.img, (self.pos_x,self.pos_y))
         py.display.update() 
         
 class bubble:
     def __init__(self):
-        self.image=bubble_image
+        self.imag = bubble_image
         self.pos_x = WIDHT+np.random.randint(10,600)
-        self.pos_y=np.random.randint(10, 600)
-        self.width = self.image.get_width()
-              
+        self.pos_y = np.random.randint(10, 600 - bubble_dimesion)
+        self.mask = py.mask.from_surface(self.imag)
+        
     def update(self):
         self.pos_x -=10
-        if self.pos_x < -self.width:
+        if self.pos_x < - bubble_dimesion:
             self.pos_x = WIDHT + np.random.randint(10, 900)
             self.pos_y =np.random.randint(10, 600)
     
     def draw(self,screen):
-        screen.blit(self.image, (self.pos_x,self.pos_y))
-        py.display.update()
+        screen.blit(self.imag, (self.pos_x,self.pos_y))
+    
+    def collision(self,obj):
+        return collide(self,obj)
+        
+def collide(obj1, obj2):
+    offset_x = obj2.pos_x - obj1.pos_x
+    offset_y = obj2.pos_y - obj1.pos_y
+    return obj1.mask.overlap(obj2.mask, (offset_x, offset_y)) != None
 
 
 def main():
-    player=axolote()
-    for i in range(3): bubbles.append(bubble())
+    fps = 60
+    bubbles = []
+    player = axolote()
+    score = 0
+    
+    main_font = py.font.SysFont("comicsans", 50)
+    
+    for i in range(4): bubbles.append(bubble())
     clock=py.time.Clock()
     run = True
+    
     capture =cv.VideoCapture(0)
+    
     mp_drawing = mp.solutions.drawing_utils
     mp_holistic = mp.solutions.holistic
-    with mp_holistic.Holistic(min_detection_confidence=0.8,min_tracking_confidence=0.8)as holistic:
+    
+    def redraw(score):
+        screen.blit(back_image,(0,0))
+        score_label = main_font.render(f"Score: {score} ",1,(255,255,255))
+        
+        screen.blit(score_label,(WIDHT-score_label.get_width()-10,10))
+        
+        for i in range(4): 
+                bubbles[i].draw(screen)
+                bubbles[i].update()
+                if bubbles[i].collision(player):
+                    score += 1
+    
+        player.draw(screen) 
+        player.update(stage)
+        
+        
+    with mp_holistic.Holistic(min_detection_confidence=0.8,min_tracking_confidence=0.8) as holistic:
         while run: 
+            
             clock.tick(fps)
             data,frame = capture.read()
-            imag,stage=process(frame,mp_drawing,mp_holistic,holistic)
+            imag,stage = process(frame,mp_drawing,mp_holistic,holistic)
+            
+            redraw(score)
+                
+            cv.imshow('camera',imag)
             
             for event in py.event.get():
                 if event.type == py.QUIT:
                     run = False
-            player.draw(screen)  
-            player.update(stage)
-            for i in range(3): 
-                bubbles[i].draw(screen)
-                bubbles[i].update()
-            cv.imshow('camera',imag)
             
             if cv.waitKey(2) == ord('q'):
                 break
