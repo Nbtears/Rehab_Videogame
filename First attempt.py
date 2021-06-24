@@ -10,18 +10,19 @@ import pygame as py
 import mediapipe as mp
 
 movement=0
-WIDHT, HEIGHT = 700, 700
+WIDHT, HEIGHT = 900, 600
 screen=py.display.set_mode([WIDHT,HEIGHT])
 py.display.set_caption("Rehab Videogame")
-back_color=(74,164,243)
-bee_width=55
-bee_height=55
-bee_image=py.image.load('secondbee.png')
-bee_image=py.transform.scale(bee_image,(bee_width,bee_height))
-star_image=py.image.load('star.png')
-star_image=py.transform.scale(star_image,(bee_width,bee_height))
+back_image=py.image.load("sea3.jpg")
+back_image=py.transform.scale(back_image,(900,600))
+axo_width=40
+axo_height=40
+axo_image=py.image.load('axolote1.png')
+axo_image=py.transform.flip(py.transform.scale(axo_image,(120,120)),True,False)
+bubble_image=py.image.load('buble2.png')
+bubble_image=py.transform.scale(bubble_image,(axo_width,axo_height))
 fps=60
-stars=[]
+bubbles=[]
 
 def angle_calculate(a,b,c):
     
@@ -81,11 +82,11 @@ def process(frame,mp_drawing,mp_holistic,holistic):
     return image,stage
             
 
-class bee:
+class axolote:
 
     def __init__(self):
     
-        self.img=bee_image
+        self.img=axo_image
         self.velocity=30
         self.pos_x=100
         self.pos_y=100
@@ -97,13 +98,13 @@ class bee:
             self.pos_y += self.velocity
         
     def draw (self,screen):
-        screen.fill(back_color)
+        screen.blit(back_image,(0,0))
         screen.blit(self.img, (self.pos_x,self.pos_y))
         py.display.update() 
         
-class star:
+class bubble:
     def __init__(self):
-        self.image=star_image
+        self.image=bubble_image
         self.pos_x = WIDHT+np.random.randint(10,600)
         self.pos_y=np.random.randint(10, 600)
         self.width = self.image.get_width()
@@ -120,8 +121,8 @@ class star:
 
 
 def main():
-    player=bee()
-    for i in range(3): stars.append(star())
+    player=axolote()
+    for i in range(3): bubbles.append(bubble())
     clock=py.time.Clock()
     run = True
     capture =cv.VideoCapture(0)
@@ -139,8 +140,8 @@ def main():
             player.draw(screen)  
             player.update(stage)
             for i in range(3): 
-                stars[i].draw(screen)
-                stars[i].update()
+                bubbles[i].draw(screen)
+                bubbles[i].update()
             cv.imshow('camera',imag)
             
             if cv.waitKey(2) == ord('q'):
