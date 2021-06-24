@@ -10,9 +10,9 @@ import pygame as py
 import mediapipe as mp
 py.font.init()
 
-score=0
-movement = 0
+score = 0
 lives = 3
+movement = 0
 WIDHT, HEIGHT = 900, 600
 screen = py.display.set_mode([WIDHT,HEIGHT])
 py.display.set_caption("Rehab Videogame")
@@ -159,13 +159,17 @@ def collide(obj1, obj2):
 
 
 
-def main():
+def game():
     fps = 60
     clock=py.time.Clock()
     run = True
+    lives = 3
+    score = 0
+    
     bubbles = []
     enemies = enemy()
     player = axolote()
+   
     py.mixer.init()
     sound_bubble = py.mixer.Sound('sources/blop1.wav')
     for i in range(4): bubbles.append(bubble())
@@ -184,8 +188,11 @@ def main():
         screen.blit(back_image,(0,0))
         score_label = main_font.render(f"Score: {score} ",1,(255,255,255))
         screen.blit(score_label,(WIDHT-score_label.get_width()-10,10))
-        
-        
+        if lives <= 0:
+                lost_label = lost_font.render('Game Over',1,(255,255,255))
+                screen.blit(lost_label,(WIDHT/2-lost_label.get_width()/2,300))
+                py.time.delay(3000)
+
         if lives >= 1:
             screen.blit(heart_image,(5,5))
             if lives >= 2:
@@ -210,11 +217,7 @@ def main():
      
         player.draw(screen) 
         player.update(stage)
-        
-        if lives < 0:
-            print('lol')
-            lost_label = lost_font.render('Game Over',1,(255,255,255))
-            screen.blit(lost_label,(WIDHT/2-lost_label.get_width()/2,300))
+       
             
     with mp_holistic.Holistic(min_detection_confidence=0.8,min_tracking_confidence=0.8) as holistic:
         while run: 
@@ -224,18 +227,37 @@ def main():
             imag,stage = process(frame,mp_drawing,mp_holistic,holistic)
             
             redraw()
+            
+            if lives == 0:
+                run = False
                 
             cv.imshow('camera',imag)
             
             for event in py.event.get():
                 if event.type == py.QUIT:
-                    run = False
+                    break
+    capture.release()       
+    
+    
             
-            if cv.waitKey(2) == ord('q'):
-                break
+def main():
+    title_font = py.font.SysFont("comicsans", 70)
+    run = True
+    while run:
+        screen.blit(back_image,(0,0))
+        title_label = title_font.render("Press click to begin...",1,(255,255,255))
+        
+        screen.blit(title_label,(WIDHT/2 - title_label.get_width()/2, 350))
+        py.display.update()
+    
+        for event in py.event.get():
+            if event.type == py.MOUSEBUTTONDOWN:
+                game()
+            if event.type == py.QUIT:
+                run = False
                 
-    capture.release()
-    cv.destroyAllWindows()       
+
+    cv.destroyAllWindows() 
     py.quit()
 
   
