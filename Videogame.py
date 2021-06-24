@@ -10,17 +10,18 @@ import pygame as py
 import mediapipe as mp
 py.font.init()
 
+score=0
 movement = 0
 WIDHT, HEIGHT = 900, 600
 screen = py.display.set_mode([WIDHT,HEIGHT])
 py.display.set_caption("Rehab Videogame")
-back_image = py.image.load("sea3.jpg")
+back_image = py.image.load("sources/sea3.jpg")
 back_image = py.transform.scale(back_image,(900,600))
-bubble_dimesion = 30
+bubble_dimesion = 40
 axo_dimension = 100
-axo_image = py.image.load('axolote1.png')
+axo_image = py.image.load('sources/axolote1.png')
 axo_image = py.transform.flip(py.transform.scale(axo_image,(axo_dimension,axo_dimension)),True,False)
-bubble_image = py.image.load('buble2.png')
+bubble_image = py.image.load('sources/buble2.png')
 bubble_image = py.transform.scale(bubble_image,(bubble_dimesion,bubble_dimesion))
 
 
@@ -66,7 +67,7 @@ def process(frame,mp_drawing,mp_holistic,holistic):
                              cv.FONT_HERSHEY_SIMPLEX,0.5,(255,255,255),2,cv.LINE_AA)
             
             #repetitions
-            if angle>120:
+            if angle>130:
                 stage = 0
             elif angle <=60:
                 stage = 1
@@ -110,7 +111,7 @@ class bubble:
         self.mask = py.mask.from_surface(self.imag)
         
     def update(self):
-        self.pos_x -=10
+        self.pos_x -= 10
         if self.pos_x < - bubble_dimesion:
             self.pos_x = WIDHT + np.random.randint(10, 900)
             self.pos_y =np.random.randint(10, 600)
@@ -120,18 +121,21 @@ class bubble:
     
     def collision(self,obj):
         return collide(self,obj)
+    
+    def delete (self):
+        self.pos_x = -bubble_dimesion
         
 def collide(obj1, obj2):
     offset_x = obj2.pos_x - obj1.pos_x
     offset_y = obj2.pos_y - obj1.pos_y
     return obj1.mask.overlap(obj2.mask, (offset_x, offset_y)) != None
 
-
 def main():
     fps = 60
     bubbles = []
     player = axolote()
-    score = 0
+    py.mixer.init()
+    sound_bubble = py.mixer.Sound('sources/blop1.wav')
     
     main_font = py.font.SysFont("comicsans", 50)
     
@@ -144,7 +148,8 @@ def main():
     mp_drawing = mp.solutions.drawing_utils
     mp_holistic = mp.solutions.holistic
     
-    def redraw(score):
+    def redraw():
+        global score
         screen.blit(back_image,(0,0))
         score_label = main_font.render(f"Score: {score} ",1,(255,255,255))
         
@@ -154,7 +159,9 @@ def main():
                 bubbles[i].draw(screen)
                 bubbles[i].update()
                 if bubbles[i].collision(player):
+                    sound_bubble.play()
                     score += 1
+                    bubbles[i].delete()  
     
         player.draw(screen) 
         player.update(stage)
@@ -167,7 +174,7 @@ def main():
             data,frame = capture.read()
             imag,stage = process(frame,mp_drawing,mp_holistic,holistic)
             
-            redraw(score)
+            redraw()
                 
             cv.imshow('camera',imag)
             
