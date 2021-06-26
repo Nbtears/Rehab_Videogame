@@ -13,8 +13,8 @@ py.font.init()
 score = 0
 lives = 3
 movement = 0
-WIDHT, HEIGHT = 900, 600
-screen = py.display.set_mode([WIDHT,HEIGHT])
+WIDTH, HEIGHT = 900, 600
+screen = py.display.set_mode([WIDTH,HEIGHT])
 py.display.set_caption("Rehab Videogame")
 back_image = py.image.load("sources/sea3.jpg")
 back_image = py.transform.scale(back_image,(900,600))
@@ -22,12 +22,13 @@ bubble_dimension = 40
 axo_dimension = 100
 heart_image = py.image.load("sources/heart.png")
 heart_image = py.transform.scale(heart_image,(bubble_dimension,bubble_dimension))
+first_image = py.image.load("sources/axolote2.png")
 axo_image = py.image.load('sources/axolote1.png')
 axo_image = py.transform.flip(py.transform.scale(axo_image,(axo_dimension,axo_dimension)),True,False)
 bubble_image = py.image.load('sources/buble2.png')
 bubble_image = py.transform.scale(bubble_image,(bubble_dimension,bubble_dimension))
 enemy_image = py.image.load('sources/pez.png')
-enemy_image = py.transform.scale (enemy_image,(axo_dimension,axo_dimension))
+enemy_image = py.transform.scale(enemy_image,(axo_dimension,axo_dimension))
 
 
 def angle_calculate(a,b,c):
@@ -111,14 +112,14 @@ class axolote:
 class bubble:
     def __init__(self):
         self.imag = bubble_image
-        self.pos_x = WIDHT+np.random.randint(30,600)
+        self.pos_x = WIDTH+np.random.randint(30,600)
         self.pos_y = np.random.randint(40, 600 - bubble_dimension)
         self.mask = py.mask.from_surface(self.imag)
         
     def update(self):
         self.pos_x -= 10
         if self.pos_x < - bubble_dimension:
-            self.pos_x = WIDHT + np.random.randint(10, 900)
+            self.pos_x = WIDTH + np.random.randint(10, 900)
             self.pos_y =np.random.randint(40, 600 - bubble_dimension)
     
     def draw(self,screen):
@@ -133,14 +134,14 @@ class bubble:
 class enemy():
       def __init__(self):
         self.imag = enemy_image
-        self.pos_x = WIDHT + np.random.randint(10,600)
+        self.pos_x = WIDTH + np.random.randint(10,600)
         self.pos_y = np.random.randint(40, 600 - axo_dimension)
         self.mask = py.mask.from_surface(self.imag)
         
       def update(self):
         self.pos_x -= 5
         if self.pos_x < - axo_dimension:
-            self.pos_x = WIDHT + np.random.randint(10, 900)
+            self.pos_x = WIDTH + np.random.randint(10, 900)
             self.pos_y =np.random.randint(40, 600 - axo_dimension)
     
       def draw(self,screen):
@@ -173,7 +174,7 @@ def game():
     py.mixer.init()
     sound_bubble = py.mixer.Sound('sources/blop1.wav')
     sound_dead = py.mixer.Sound('sources/blood.wav')
-    for i in range(4): bubbles.append(bubble())
+    for i in range(5): bubbles.append(bubble())
     
     main_font = py.font.SysFont("comicsans", 40)
     lost_font = py.font.SysFont("comicsans",100)
@@ -185,42 +186,44 @@ def game():
     
     def redraw():
         global score, lives
-    
-        screen.blit(back_image,(0,0))
-        score_label = main_font.render(f"Score: {score} ",1,(255,255,255))
-        screen.blit(score_label,(WIDHT-score_label.get_width()-10,10))
-        
-        if lives >= 1:
-            screen.blit(heart_image,(5,5))
-            if lives >= 2:
-                screen.blit(heart_image,(55,5))
-                if lives == 3:
-                    screen.blit(heart_image,(105,5))
-        
-        for i in range(4): 
-                bubbles[i].draw(screen)
-                bubbles[i].update()
-                if bubbles[i].collision(player):
-                    sound_bubble.play()
-                    score += 1
-                    bubbles[i].delete()  
-                     
-        enemies.draw(screen)
-        enemies.update()
-        if enemies.collision(player):
-            sound_dead.play()
-            enemies.delete()
-            lives -= 1
-     
-        player.draw(screen) 
-        player.update(stage)
-        
+           
         if lives == 0:
             screen.blit(back_image,(0,0))
             lost_label = lost_font.render('Game Over',1,(255,255,255))
-            screen.blit(lost_label,(WIDHT/2-lost_label.get_width()/2,300))
-            py.time.wait(3000)     
+            screen.blit(first_image,(WIDTH/2 - first_image.get_width()/2,100))
+            score_label = main_font.render(f"Score: {score} ",1,(255,255,255))
+            screen.blit(lost_label,(WIDTH/2-lost_label.get_width()/2,320))
+            py.display.update()
+        else:
+            screen.blit(back_image,(0,0))
+            score_label = main_font.render(f"Score: {score} ",1,(255,255,255))
+            screen.blit(score_label,(WIDTH-score_label.get_width()-10,10))
+        
+            if lives >= 1:
+                screen.blit(heart_image,(5,5))
+                if lives >= 2:
+                    screen.blit(heart_image,(55,5))
+                    if lives == 3:
+                        screen.blit(heart_image,(105,5))
             
+            for i in range(5): 
+                    bubbles[i].draw(screen)
+                    bubbles[i].update()
+                    if bubbles[i].collision(player):
+                        sound_bubble.play()
+                        score += 1
+                        bubbles[i].delete()  
+                         
+            enemies.draw(screen)
+            enemies.update()
+            if enemies.collision(player):
+                sound_dead.play()
+                enemies.delete()
+                lives -= 1
+         
+            player.draw(screen) 
+            player.update(stage)
+        
     with mp_holistic.Holistic(min_detection_confidence=0.8,min_tracking_confidence=0.8) as holistic:
         while run: 
             
@@ -229,37 +232,34 @@ def game():
             imag,stage = process(frame,mp_drawing,mp_holistic,holistic)
             
             redraw()
-            
-            if lives == 0:
-                run = False
-                
+                            
             cv.imshow('camera',imag)
             
             for event in py.event.get():
                 if event.type == py.QUIT:
-                    py.quit()
-                    capture.release() 
-                    cv.destroyAllWindows() 
-                    break
-    capture.release()           
+                    run = False                    
+    
+    
+    capture.release() 
+    cv.destroyAllWindows()           
             
 def main():
     title_font = py.font.SysFont("comicsans", 70)
     run = True
     while run:
         screen.blit(back_image,(0,0))
+        screen.blit(first_image,(WIDTH/2 - first_image.get_width()/2,100))
         title_label = title_font.render("Press click to begin...",1,(255,255,255))
-        
-        screen.blit(title_label,(WIDHT/2 - title_label.get_width()/2, 350))
+        screen.blit(title_label,(WIDTH/2 - title_label.get_width()/2, 350))
         py.display.update()
     
         for event in py.event.get():
             if event.type == py.MOUSEBUTTONDOWN:
-               game()      
+               game()  
+               run = False
             if event.type == py.QUIT:
                 run = False
-                
-
+    
     cv.destroyAllWindows() 
     py.quit()
 
