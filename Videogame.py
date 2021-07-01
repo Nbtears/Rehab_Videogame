@@ -29,6 +29,8 @@ bubble_image = py.image.load('sources/buble2.png')
 bubble_image = py.transform.scale(bubble_image,(bubble_dimension,bubble_dimension))
 enemy_image = py.image.load('sources/pez.png')
 enemy_image = py.transform.scale(enemy_image,(axo_dimension,axo_dimension))
+right_image = py.image.load('sources/right.png')
+left_image = py.image.load('sources/left.png')
 
 
 def angle_calculate(a,b,c):
@@ -45,7 +47,7 @@ def angle_calculate(a,b,c):
     
     return angle   
 
-def process(frame,mp_drawing,mp_holistic,holistic):
+def process(frame,mp_drawing,mp_holistic,holistic,side):
     stage = None
     #cambios de color y aplicar módulo holistic
     image = cv.cvtColor(frame,cv.COLOR_RGB2BGR)
@@ -57,23 +59,40 @@ def process(frame,mp_drawing,mp_holistic,holistic):
             landmarks = result.pose_landmarks.landmark
             
             #coordenadas de brazo izq
-            shoulder = [landmarks[mp_holistic.PoseLandmark.LEFT_SHOULDER.value].x,
+            shoulder_L = [landmarks[mp_holistic.PoseLandmark.LEFT_SHOULDER.value].x,
                       landmarks[mp_holistic.PoseLandmark.LEFT_SHOULDER.value].y]
-            elbow = [landmarks[mp_holistic.PoseLandmark.LEFT_ELBOW.value].x,
+            elbow_L = [landmarks[mp_holistic.PoseLandmark.LEFT_ELBOW.value].x,
                       landmarks[mp_holistic.PoseLandmark.LEFT_ELBOW.value].y]
-            wrist = [landmarks[mp_holistic.PoseLandmark.LEFT_WRIST.value].x,
+            wrist_L = [landmarks[mp_holistic.PoseLandmark.LEFT_WRIST.value].x,
                       landmarks[mp_holistic.PoseLandmark.LEFT_WRIST.value].y]
             
-            #calculate angle
-            angle = angle_calculate(shoulder,elbow,wrist)
+            #coordenadas de brazo derecho
+            shoulder_R = [landmarks[mp_holistic.PoseLandmark.RIGHT_SHOULDER.value].x,
+                      landmarks[mp_holistic.PoseLandmark.RIGHT_SHOULDER.value].y]
+            elbow_R = [landmarks[mp_holistic.PoseLandmark.RIGHT_ELBOW.value].x,
+                      landmarks[mp_holistic.PoseLandmark.RIGHT_ELBOW.value].y]
+            wrist_R = [landmarks[mp_holistic.PoseLandmark.RIGHT_WRIST.value].x,
+                      landmarks[mp_holistic.PoseLandmark.RIGHT_WRIST.value].y]
             
-            #look angle
-            cv.putText(image,str(angle),
-                       tuple(np.multiply(elbow,[640,480]).astype(int)),
-                             cv.FONT_HERSHEY_SIMPLEX,0.5,(255,255,255),2,cv.LINE_AA)
+            if side == 0:
+                #calculate angle
+                angle = angle_calculate(shoulder_L,elbow_L,wrist_L)
+                
+                #look angle
+                cv.putText(image,str(angle),
+                           tuple(np.multiply(elbow_L,[640,480]).astype(int)),
+                                 cv.FONT_HERSHEY_SIMPLEX,0.5,(255,255,255),2,cv.LINE_AA)
+            else:
+                #calculate angle
+                angle = angle_calculate(shoulder_R,elbow_R,wrist_R)
+                
+                #look angle
+                cv.putText(image,str(angle),
+                           tuple(np.multiply(elbow_R,[640,480]).astype(int)),
+                                 cv.FONT_HERSHEY_SIMPLEX,0.5,(255,255,255),2,cv.LINE_AA)
             
             #repetitions
-            if angle>130:
+            if angle>120:
                 stage = 0
             elif angle <=60:
                 stage = 1
@@ -152,13 +171,32 @@ class enemy():
     
       def delete (self):
         self.pos_x = - axo_dimension
-              
+        
+class button:
+    def __init__(self,image,x,scale):
+        width = image.get_width()
+        height = image.get_height()
+        self.image=py.transform.scale(image,(int(width*scale),int(height*scale)))
+        self.pos_x = x
+        self.pos_y = 400
+        self.rect = self.image.get_rect()
+        self.rect.topleft = (x,self.pos_y)
+        self.click = False
+    
+    def draw(self):
+        screen.blit(self.image,(self.pos_x,self.pos_y))
+        pos=py.mouse.get_pos()
+        
+        if self.rect.collidepoint(pos):
+            if py.mouse.get_pressed()[0]==1 and self.click == False:
+                return True       
+             
 def collide(obj1, obj2):
     offset_x = obj2.pos_x - obj1.pos_x
     offset_y = obj2.pos_y - obj1.pos_y
     return obj1.mask.overlap(obj2.mask, (offset_x, offset_y)) != None
 
-def game():
+def game(side):
     fps = 60
     clock=py.time.Clock()
     run = True
@@ -171,11 +209,11 @@ def game():
    
     py.mixer.init()
     sound_bubble = py.mixer.Sound('sources/blop1.wav')
-    sound_dead = py.mixer.Sound('sources/blood.wav')
+    sound_dead = py.mixer.Sound('sources/Boing.mp3')
     for i in range(5): bubbles.append(bubble())
     
-    main_font = py.font.SysFont("comicsans", 40)
-    lost_font = py.font.SysFont("comicsans",100)
+    main_font = py.font.SysFont("georgia", 40)
+    lost_font = py.font.SysFont("georgia",100)
     
     capture =cv.VideoCapture(0)
     
@@ -190,6 +228,7 @@ def game():
             lost_label = lost_font.render('Game Over',1,(255,255,255))
             screen.blit(first_image,(WIDTH/2 - first_image.get_width()/2,100))
             score_label = main_font.render(f"Score: {score} ",1,(255,255,255))
+            screen.blit(score_label,(WIDTH-score_label.get_width()-10,10))
             screen.blit(lost_label,(WIDTH/2-lost_label.get_width()/2,320))
             py.display.update()
         else:
@@ -227,7 +266,7 @@ def game():
             
             clock.tick(fps)
             data,frame = capture.read()
-            imag,stage = process(frame,mp_drawing,mp_holistic,holistic)
+            imag,stage = process(frame,mp_drawing,mp_holistic,holistic,side)
             
             redraw()
                             
@@ -242,19 +281,26 @@ def game():
     cv.destroyAllWindows()           
             
 def main():
-    title_font = py.font.SysFont("comicsans", 70)
+    title_font = py.font.SysFont("georgia", 70)
+    side = None
     run = True
+    r_button = button(right_image,200,0.2)
+    l_button = button(left_image,500,0.2)
     while run:
         screen.blit(back_image,(0,0))
-        screen.blit(first_image,(WIDTH/2 - first_image.get_width()/2,100))
-        title_label = title_font.render("Press click to begin...",1,(255,255,255))
-        screen.blit(title_label,(WIDTH/2 - title_label.get_width()/2, 350))
+        screen.blit(first_image,(WIDTH/2 - first_image.get_width()/2,50))
+        if r_button.draw():
+            side = 1
+        elif l_button.draw():
+            side = 0
+        
+        title_label = title_font.render("Choose one...",1,(255,255,255))
+        screen.blit(title_label,(WIDTH/2 - title_label.get_width()/2, 300))
         py.display.update()
-    
+        if side != None:
+            game(side)
+            run = False
         for event in py.event.get():
-            if event.type == py.MOUSEBUTTONDOWN:
-               game()  
-               run = False
             if event.type == py.QUIT:
                 run = False
     
