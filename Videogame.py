@@ -1,9 +1,4 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Jun 22 23:55:19 2021
 
-@author: diana
-"""
 import numpy as np
 import cv2 as cv
 import pygame as py
