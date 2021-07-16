@@ -1,29 +1,38 @@
-
+import pandas as pd
+from datetime import datetime
+import csv
+import time 
 import numpy as np
 import cv2 as cv
 import pygame as py
 import mediapipe as mp
 py.font.init()
-
+side = None
 score = 0
 lives = 3
 movement = 0
+minang=180
+maxang=0
+c=0
+t=0
 WIDTH, HEIGHT = 900, 600
 screen = py.display.set_mode([WIDTH,HEIGHT])
 py.display.set_caption("Rehab Videogame")
 back_image = py.image.load("sources/sea3.jpg")
 back_image = py.transform.scale(back_image,(900,600))
 bubble_dimension = 40
-axo_dimension = 100
+axo_dimension = 180
+enemy_dimension = 100
 heart_image = py.image.load("sources/heart.png")
 heart_image = py.transform.scale(heart_image,(bubble_dimension,bubble_dimension))
-first_image = py.image.load("sources/axolote2.png")
-axo_image = py.image.load('sources/axolote1.png')
+first_image = py.image.load("sources/axo2.png")
+first_image = py.transform.scale(first_image,(500,400))
+axo_image = py.image.load('sources/axo3.png')
 axo_image = py.transform.flip(py.transform.scale(axo_image,(axo_dimension,axo_dimension)),True,False)
 bubble_image = py.image.load('sources/buble2.png')
 bubble_image = py.transform.scale(bubble_image,(bubble_dimension,bubble_dimension))
 enemy_image = py.image.load('sources/pez.png')
-enemy_image = py.transform.scale(enemy_image,(axo_dimension,axo_dimension))
+enemy_image = py.transform.scale(enemy_image,(enemy_dimension,enemy_dimension))
 right_image = py.image.load('sources/right.png')
 left_image = py.image.load('sources/left.png')
 
@@ -43,6 +52,7 @@ def angle_calculate(a,b,c):
     return angle   
 
 def process(frame,mp_drawing,mp_holistic,holistic,side):
+    global maxang, minang
     stage = None
     #cambios de color y aplicar módulo holistic
     image = cv.cvtColor(frame,cv.COLOR_RGB2BGR)
@@ -69,7 +79,7 @@ def process(frame,mp_drawing,mp_holistic,holistic,side):
             wrist_R = [landmarks[mp_holistic.PoseLandmark.RIGHT_WRIST.value].x,
                       landmarks[mp_holistic.PoseLandmark.RIGHT_WRIST.value].y]
             
-            if side == 0:
+            if side == 1:
                 #calculate angle
                 angle = angle_calculate(shoulder_L,elbow_L,wrist_L)
                 
@@ -80,12 +90,17 @@ def process(frame,mp_drawing,mp_holistic,holistic,side):
             else:
                 #calculate angle
                 angle = angle_calculate(shoulder_R,elbow_R,wrist_R)
+            
                 
                 #look angle
                 cv.putText(image,str(angle),
                            tuple(np.multiply(elbow_R,[640,480]).astype(int)),
                                  cv.FONT_HERSHEY_SIMPLEX,0.5,(255,255,255),2,cv.LINE_AA)
-            
+            if angle>maxang:
+                maxang=angle
+            elif angle<minang:
+                minang=angle
+                
             #repetitions
             if angle>120:
                 stage = 0
@@ -149,14 +164,14 @@ class enemy():
       def __init__(self):
         self.imag = enemy_image
         self.pos_x = WIDTH + np.random.randint(10,600)
-        self.pos_y = np.random.randint(40, 600 - axo_dimension)
+        self.pos_y = np.random.randint(40, 600 - enemy_dimension)
         self.mask = py.mask.from_surface(self.imag)
         
       def update(self):
         self.pos_x -= 5
-        if self.pos_x < - axo_dimension:
+        if self.pos_x < - enemy_dimension:
             self.pos_x = WIDTH + np.random.randint(10, 900)
-            self.pos_y =np.random.randint(40, 600 - axo_dimension)
+            self.pos_y =np.random.randint(40, 600 - enemy_dimension)
     
       def draw(self,screen):
         screen.blit(self.imag, (self.pos_x,self.pos_y))
@@ -165,7 +180,7 @@ class enemy():
         return collide(self,obj)
     
       def delete (self):
-        self.pos_x = - axo_dimension
+        self.pos_x = - enemy_dimension
         
 class button:
     def __init__(self,image,x,scale):
@@ -192,6 +207,7 @@ def collide(obj1, obj2):
     return obj1.mask.overlap(obj2.mask, (offset_x, offset_y)) != None
 
 def game(side):
+    
     fps = 60
     clock=py.time.Clock()
     run = True
@@ -216,16 +232,24 @@ def game(side):
     mp_holistic = mp.solutions.holistic  
     
     def redraw():
-        global score, lives
+        global score, lives,c
            
         if lives == 0:
-            screen.blit(back_image,(0,0))
-            lost_label = lost_font.render('Game Over',1,(255,255,255))
-            screen.blit(first_image,(WIDTH/2 - first_image.get_width()/2,100))
-            score_label = main_font.render(f"Score: {score} ",1,(255,255,255))
-            screen.blit(score_label,(WIDTH-score_label.get_width()-10,10))
-            screen.blit(lost_label,(WIDTH/2-lost_label.get_width()/2,320))
-            py.display.update()
+            if c==0:
+                screen.blit(back_image,(0,0))
+                lost_label = lost_font.render('Game Over',1,(255,255,255))
+                screen.blit(first_image,(WIDTH/2 - first_image.get_width()/2,25))
+                score_label = main_font.render(f"Score: {score} ",1,(255,255,255))
+                progress1_label =main_font.render(f"Minimum angle:{int(minang)}°",1,(255,255,255))
+                progress2_label =main_font.render(f"Maximum angle:{int(maxang)}°",1,(255,255,255))
+                screen.blit(score_label,(WIDTH-score_label.get_width()-10,10))
+                screen.blit(lost_label,(WIDTH/2-lost_label.get_width()/2,320))
+                screen.blit(progress1_label,(WIDTH/2-progress1_label.get_width()/2,450))
+                screen.blit(progress2_label,(WIDTH/2-progress2_label.get_width()/2,500))
+                py.display.update()
+                progress()
+                c=1
+            
         else:
             screen.blit(back_image,(0,0))
             score_label = main_font.render(f"Score: {score} ",1,(255,255,255))
@@ -261,29 +285,52 @@ def game(side):
             
             clock.tick(fps)
             data,frame = capture.read()
+            frame=cv.flip(frame, 1)
             imag,stage = process(frame,mp_drawing,mp_holistic,holistic,side)
             
-            redraw()
-                            
             cv.imshow('camera',imag)
             
             for event in py.event.get():
                 if event.type == py.QUIT:
-                    run = False                    
-    
-    
+                    run = False   
+            
+            redraw()
+                            
     capture.release() 
     cv.destroyAllWindows()           
+
+
+def progress():
+    global minang, maxang,t, side
+    
+    if side==0:
+        arm='Left'
+    else: 
+        arm='Right'
+        
+    elapsed = time.time()-t
+    file=open("PROGRESO.csv","a",newline="")
+    writer=csv.writer(file)
+    try:
+        pd.read_csv('PROGRESO.csv')
+    except:
+        writer.writerow(['Date','Session duration (s)','Chosen arm', 'Min. angle','Max. angle'])
             
+    date = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+    info=(date,elapsed,arm,minang,maxang)
+    writer.writerow(info)
+    file.close()  
+       
 def main():
+    global t, side
     title_font = py.font.SysFont("georgia", 70)
-    side = None
+    
     run = True
-    r_button = button(right_image,200,0.2)
-    l_button = button(left_image,500,0.2)
+    r_button = button(right_image,500,0.2)
+    l_button = button(left_image,200,0.2)
     while run:
         screen.blit(back_image,(0,0))
-        screen.blit(first_image,(WIDTH/2 - first_image.get_width()/2,50))
+        screen.blit(first_image,(WIDTH/2 - first_image.get_width()/2,10))
         if r_button.draw():
             side = 1
         elif l_button.draw():
@@ -293,6 +340,7 @@ def main():
         screen.blit(title_label,(WIDTH/2 - title_label.get_width()/2, 300))
         py.display.update()
         if side != None:
+            t = time.time()
             game(side)
             run = False
         for event in py.event.get():
