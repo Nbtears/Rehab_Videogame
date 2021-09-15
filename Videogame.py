@@ -326,8 +326,9 @@ def main():
     global t, side
     
     #interfaz
-    data,user = If.main()
-    
+    while True:
+        If.main()
+        False
     #pygame
     title_font = py.font.SysFont("georgia", 70)
     run = True
