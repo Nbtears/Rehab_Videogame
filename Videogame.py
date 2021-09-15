@@ -20,8 +20,7 @@ t=0
 WIDTH, HEIGHT = 900, 600
 screen = py.display.set_mode([WIDTH,HEIGHT])
 py.display.set_caption("Rehab Videogame")
-back_image = py.image.load("sources/sea3.jpg")
-back_image = py.transform.scale(back_image,(900,600))
+back_image = py.image.load("sources/sea5.jpg")
 bubble_dimension = 40
 axo_dimension = 180
 enemy_dimension = 100
@@ -326,9 +325,7 @@ def main():
     global t, side
     
     #interfaz
-    while True:
-        If.main()
-        False
+    If.main()
     #pygame
     title_font = py.font.SysFont("georgia", 70)
     run = True
