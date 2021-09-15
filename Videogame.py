@@ -84,9 +84,9 @@ def process(frame,mp_drawing,mp_holistic,holistic,side):
                 angle = angle_calculate(shoulder_L,elbow_L,wrist_L)
                 
                 #look angle
-                cv.putText(image,str(angle),
-                           tuple(np.multiply(elbow_L,[640,480]).astype(int)),
-                                 cv.FONT_HERSHEY_SIMPLEX,0.5,(255,255,255),2,cv.LINE_AA)
+                cv.putText(image,str(int(angle)),
+                           tuple(np.multiply(elbow_L,[647,510]).astype(int)),
+                                 cv.FONT_HERSHEY_SIMPLEX,0.8,(255,255,255),2,cv.LINE_AA)
             else:
                 #calculate angle
                 angle = angle_calculate(shoulder_R,elbow_R,wrist_R)
@@ -298,7 +298,6 @@ def game(side):
                             
     capture.release() 
     cv.destroyAllWindows()           
-
 
 def progress():
     global minang, maxang,t, side
