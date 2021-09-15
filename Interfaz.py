@@ -6,89 +6,94 @@ Created on Wed Sep 15 01:41:07 2021
 """
 
 import tkinter as tk   
-   
-
+ 
 def ingresar():
-    print ("Ingreso")
     ingresowindow = tk.Tk()
-    ingresowindow.tk.call('wm', 'iconphoto', ingresowindow._w, tk.PhotoImage(file='sources/buble2.png'))
+    ingresowindow.title("Ingresar")
     ingresowindow.geometry("900x600")
     
     us_label = tk.Label (ingresowindow,text="Usuario: ")
-    us_label.pack()
+    us_label.pack(expand = True)
     usertext = tk.Entry (ingresowindow)
-    usertext.pack()
+    usertext.pack(expand = True)
     
-    accept = tk.Button(ingresowindow, text= "Aceptar", 
-                    activebackground="#008f39")
-    accept.pack()
+    def users():
+        global user 
+        user = usertext.get()
+        print(user)
+    
+    accept = tk.Button(ingresowindow, text= "Aceptar", command = users,
+                    activebackground="#ff7ea8")
+    accept.pack(expand = True)
+    
     
        
 def registro():
-    print ("Registro")
     registrowindow = tk.Tk()
+    registrowindow.title("Registro")
     registrowindow.geometry("900x600")
     
     name_label = tk.Label (registrowindow,text="Nombre: ")
-    name_label.pack()
+    name_label.pack(expand = True)
     nametext = tk.Entry (registrowindow)
-    nametext.pack()
+    nametext.pack(expand = True)
     
     us_label = tk.Label (registrowindow,text="Usuario: ")
-    us_label.pack()
+    us_label.pack(expand = True)
     usertext = tk.Entry (registrowindow)
-    usertext.pack()
+    usertext.pack(expand = True)
     
     y_label = tk.Label (registrowindow,text="Edad: ")
-    y_label.pack()
+    y_label.pack(expand = True)
     ytext = tk.Entry (registrowindow)
-    ytext.pack()
+    ytext.pack(expand = True)
     
     les_label = tk.Label (registrowindow,text="Lesion: ")
-    les_label.pack()
+    les_label.pack(expand = True)
     lestext = tk.Entry (registrowindow)
-    lestext.pack()
+    lestext.pack(expand = True)
     
     cl_label = tk.Label (registrowindow,text="Clínica: ")
-    cl_label.pack()
+    cl_label.pack(expand = True)
     cltext = tk.Entry (registrowindow)
-    cltext.pack()
+    cltext.pack(expand = True)
     
     def get_data():
-        
+        global data 
         name = nametext.get()
         user = usertext.get()
         age = ytext.get()
         lesion = lestext.get()
         clinic = cltext.get()
-        
-        print(name)
-        print(user)
-        print(age)
-        print(lesion)
-        print(clinic)
+        data=[name,user,age,lesion,clinic]
+        print(data)
         
         return 
     
-    accept = tk.Button(registrowindow, text= "Aceptar", command = get_data,
-                    activebackground="#008f39")
-    accept.pack()
+    accept = tk.Button(registrowindow, text= "Aceptar", command = get_data, 
+                    activebackground="#ff7ea8")
+    accept.pack(expand = True)
     
 def main():
     ventana = tk.Tk()
-    ventana.tk.call('wm', 'iconphoto', ventana._w, tk.PhotoImage(file='sources/buble2.png'))
+    #ventana.tk.call('wm', 'iconphoto', ventana._w, tk.PhotoImage(file='sources/buble2.png'))
+    ventana.title("Save the axo")
     ventana.geometry("900x600")
     tittle = tk.Label(ventana,text = "Save the axo")
     tittle.pack()
     
-    IngBt = tk.Button(ventana,text = "Ingresar", command = ingresar,
-                  activebackground="#008f39")
-    RegBt = tk.Button(ventana,text = "Registro", command = registro,
-                  activebackground="#008f39")
-    IngBt.pack(side=tk.BOTTOM)
-    RegBt.pack(side=tk.BOTTOM)
+    
+    IngBt = tk.Button(ventana,text = "Ingresar", command = ingresar, 
+                  activebackground="#ff7ea8")
+    RegBt = tk.Button(ventana,text = "Registro", command = registro, 
+                  activebackground="#ff7ea8")
+    IngBt.pack(side=tk.BOTTOM, expand = True)
+    RegBt.pack(side=tk.BOTTOM, expand = True)
 
     ventana.mainloop()
+    
+    return data,user
+
     
     
 main()

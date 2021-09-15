@@ -6,6 +6,8 @@ import numpy as np
 import cv2 as cv
 import pygame as py
 import mediapipe as mp
+import Interfaz as If
+
 py.font.init()
 side = None
 score = 0
@@ -322,8 +324,12 @@ def progress():
        
 def main():
     global t, side
-    title_font = py.font.SysFont("georgia", 70)
     
+    #interfaz
+    data,user = If.main()
+    
+    #pygame
+    title_font = py.font.SysFont("georgia", 70)
     run = True
     r_button = button(right_image,500,0.2)
     l_button = button(left_image,200,0.2)
