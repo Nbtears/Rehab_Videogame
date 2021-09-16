@@ -41,7 +41,7 @@ right_image = py.image.load('sources/right.png')
 left_image = py.image.load('sources/left.png')
 
 def angle_calculate(a,b,c,first = False):
-    
+    global ai,ti
     # print("Caculando el angulo...")
     a = np.array(a)
     b = np.array(b)
@@ -56,10 +56,17 @@ def angle_calculate(a,b,c,first = False):
     tf=(py.time.get_ticks()/1000)
     
     if first:
+        ai=angle
+        ti=tf
+        vi= angle-angle/tf-tf
         print("Es el primero!")
         first = False
     else:
         print("No es el primero")
+        v= angle-ai/tf-ti
+        print(v)
+        ai=angle
+        ti=tf
     
     return angle, first
    
@@ -345,8 +352,15 @@ def progress():
        
 def main():  
     global t, side, path
-    #interfaz
-    path=If.main()
+    
+      #interfaz
+    r=True
+    while r==True:
+        path=If.main()
+        if path!=0:
+            r=False
+    
+    print(path)
     #pygame
     title_font = py.font.SysFont("georgia", 70)
     run = True
