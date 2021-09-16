@@ -2,6 +2,7 @@ import pandas as pd
 from pathlib import Path
 from datetime import datetime
 import csv
+import os
 import time 
 import numpy as np
 import cv2 as cv
@@ -39,7 +40,7 @@ enemy_image = py.transform.scale(enemy_image,(enemy_dimension,enemy_dimension))
 right_image = py.image.load('sources/right.png')
 left_image = py.image.load('sources/left.png')
 
-def angle_calculate(a,b,c,first = None,vi = None,ti = None):
+def angle_calculate(a,b,c,image,first = None,vi = None,ti = None,):
     # print("Caculando el angulo...")
     a = np.array(a)
     b = np.array(b)
@@ -68,9 +69,8 @@ def angle_calculate(a,b,c,first = None,vi = None,ti = None):
         vi=v
         print(w)
         print(v)
-    return angle, first,vi,ti
+    return angle,w,v,first,vi,ti
    
- 
 def process(frame,mp_drawing,mp_holistic,holistic,side, first = None,vi = None,ti = None):
     global maxang, minang, maxangimage, minangimage
     stage = None
@@ -101,20 +101,33 @@ def process(frame,mp_drawing,mp_holistic,holistic,side, first = None,vi = None,t
             
             if side == 1:
                 #calculate angle
-                angle, first,vi,ti = angle_calculate(shoulder_L,elbow_L,wrist_L,first,vi,ti)
+                angle,w,v,first,vi,ti = angle_calculate(shoulder_L,elbow_L,wrist_L,image,first,vi,ti)
                 #look angle
                 cv.putText(image,str(int(angle)),
                            tuple(np.multiply(elbow_L,[647,510]).astype(int)),
                                  cv.FONT_HERSHEY_SIMPLEX,0.8,(255,255,255),2,cv.LINE_AA)
 
+                cv.putText(image,str(v),tuple(800,550),
+                                cv.FONT_HERSHEY_SIMPLEX,0.5,(255,255,255),2,cv.LINE_AA)
+
+                cv.putText(image,str(w),tuple(20,20),
+                               cv.FONT_HERSHEY_SIMPLEX,0.5,(255,255,255),2,cv.LINE_AA)
+                               
             else:
                 #calculate angle
-                angle, first,vi,ti = angle_calculate(shoulder_R,elbow_R,wrist_R,first,vi,ti)
+                angle,w,v,first,vi,ti = angle_calculate(shoulder_R,elbow_R,wrist_R,image,first,vi,ti)
                 
                 #look angle
-                cv.putText(image,str(angle),
-                           tuple(np.multiply(elbow_R,[640,480]).astype(int)),
+                cv.putText(image,str(int(angle)),
+                           tuple(np.multiply(elbow_R,[647,510]).astype(int)),
                                  cv.FONT_HERSHEY_SIMPLEX,0.5,(255,255,255),2,cv.LINE_AA)
+
+                cv.putText(image,str(v),tuple(800,550),
+                                cv.FONT_HERSHEY_SIMPLEX,0.5,(255,255,255),2,cv.LINE_AA)
+
+                cv.putText(image,str(w),tuple(20,20),
+                               cv.FONT_HERSHEY_SIMPLEX,0.5,(255,255,255),2,cv.LINE_AA)
+        
             if angle>maxang:
                 maxang=angle
                 maxangimage=image
@@ -323,10 +336,13 @@ def game(side):
                             
     capture.release() 
     cv.destroyAllWindows()           
-"""""
+
 def progress():
     global minang, maxang, t, side, maxangimage, minangimage, path
-    carpeta_fecha = path + '\\' + datetime.now().strftime("%d/%m/%Y")
+    q=str(len(os.listdir(path))+1)
+    
+    s='\\'
+    carpeta_fecha = path + s + 'Sesion_' + q + '_'+datetime.now().strftime("%d-%m-%Y") 
     Path(carpeta_fecha).mkdir(exist_ok=True)
     
     if side==0:
@@ -346,23 +362,25 @@ def progress():
     info=(date,elapsed,arm,minang,maxang)
     writer.writerow(info)
     file.close()
-    shutil.move('Progress.csv', path)
+    shutil.move('Progress.csv', carpeta_fecha)
     cv.imwrite('Maximum Angle Photo.jpg', maxangimage)
     shutil.move('Maximum Angle Photo.jpg', carpeta_fecha)
     cv.imwrite('Munimum Angle Photo.jpg', minangimage)
     shutil.move('Minimum Angle Photo.jpg', carpeta_fecha)
-  """     
+     
 def main():  
     global t, side, path
     
-    """  #interfaz
+    #interfaz
     r=True
     while r==True:
         path=If.main()
         if path!=0:
             r=False
-    """
-    #print(path)
+            
+    path=path.replace("\\", "\\\\")
+    print(path)
+    
     #pygame
     title_font = py.font.SysFont("georgia", 70)
     run = True

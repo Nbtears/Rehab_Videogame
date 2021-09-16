@@ -8,8 +8,9 @@ import csv
 import shutil
 import pandas as pd
 
+
 global check, carpeta_sesiones
-user='Diana'
+
 def graldatacsv(data):
     global date, carpeta_usuario
     file=open("Patient's Information.csv","a",newline="")
@@ -71,19 +72,13 @@ def ingresar(root):
     ingresowindow.iconbitmap("sources/icon.ico")
     ingresowindow.geometry("900x600")
     
-    """
-    imagen=ImageTk.PhotoImage(Image.open("sources/axo5.png"))
-    lbl = tk.Label(ingresowindow,image=imagen)
-    lbl.pack()
-    """
-    
     us_label = tk.Label (ingresowindow,text="Usuario: ",font=fontStyle)
     us_label.pack(expand = True)
     usertext = tk.Entry (ingresowindow,font=fontStyle)
     usertext.pack(expand = True)
     
     def users():
-        global user 
+        global vaules 
         global user,f 
         global carpeta_sesiones
         user = usertext.get()
@@ -176,21 +171,13 @@ def registro(root):
     back.pack(expand = True)
     
 def main():
+    global caperta_sesiones
     root = tk.Tk()
     fontStyle = tkFont.Font(family="Georgia", size=50)
     buttonStyle = tkFont.Font(family="Georgia", size=20)
     root.iconbitmap("sources/icon.ico")
     root.title("Save the axo")
     root.geometry("900x600")
-    
-    """
-    fondo
-    C = tk.Canvas(root, bg="blue", height=900, width=600) 
-    filename = ImageTk.PhotoImage(Image.open("sources/sea5.jpg"))
-    background_label = tk.Label(root, image=filename) 
-    background_label.place(x=0, y=0, relwidth=1, relheight=1) 
-    C.pack() 
-    """
     
     tittle = tk.Label(root,text = "Save\n The Axo",font=fontStyle,fg="#ff7ea8")
     tittle.pack()
@@ -206,7 +193,7 @@ def main():
     IngBt.pack(side=tk.BOTTOM, expand = True)
     RegBt.pack(side=tk.BOTTOM, expand = True)
     root.mainloop()
-    
+    print(carpeta_sesiones)
     return carpeta_sesiones  
 
 if __name__ == "__main__": 
