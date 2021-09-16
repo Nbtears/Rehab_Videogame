@@ -125,4 +125,3 @@ def main():
     RegBt.pack(side=tk.BOTTOM, expand = True)
     root.mainloop()
        
-main()

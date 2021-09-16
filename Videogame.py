@@ -10,7 +10,8 @@ import mediapipe as mp
 import Interfaz as If
 import shutil
 
-
+angles_final=None
+time_final=None
 py.font.init()
 side = None
 score = 0
@@ -40,7 +41,7 @@ enemy_image = py.transform.scale(enemy_image,(enemy_dimension,enemy_dimension))
 right_image = py.image.load('sources/right.png')
 left_image = py.image.load('sources/left.png')
 
-def angle_calculate(a,b,c,i):
+def angle_calculate(a,b,c):
     
     a = np.array(a)
     b = np.array(b)
@@ -52,18 +53,21 @@ def angle_calculate(a,b,c,i):
     if angle > 180.0:
         angle=360-angle
         
-    tf=(py.time.get_ticks()/1000)
-    
-    while i==0:
-        print("d")
-        i+=1
-    print("hi")
-    
     return angle  
-   
+
+def calculations(angle):
+    time_final=(py.time.get_ticks()/1000)
+    angles_final=angle
+    try:
+        print("hi")
+        vel_init=((angles_final-angles_init)/(time_final-time_init))
+        print(vel_init)
+        time_init=time_final
+        angles_init=angles_final    
+    except:
+        pass
     
 def process(frame,mp_drawing,mp_holistic,holistic,side):
-    i=0
     global maxang, minang, maxangimage, minangimage
     stage = None
     #cambios de color y aplicar módulo holistic
@@ -93,7 +97,7 @@ def process(frame,mp_drawing,mp_holistic,holistic,side):
             
             if side == 1:
                 #calculate angle
-                angle = angle_calculate(shoulder_L,elbow_L,wrist_L,i)
+                angle = angle_calculate(shoulder_L,elbow_L,wrist_L)
                 #look angle
                 cv.putText(image,str(int(angle)),
                            tuple(np.multiply(elbow_L,[647,510]).astype(int)),
@@ -101,7 +105,7 @@ def process(frame,mp_drawing,mp_holistic,holistic,side):
 
             else:
                 #calculate angle
-                angle = angle_calculate(shoulder_R,elbow_R,wrist_R,i)
+                angle = angle_calculate(shoulder_R,elbow_R,wrist_R)
                 
                 #look angle
                 cv.putText(image,str(angle),
@@ -113,13 +117,15 @@ def process(frame,mp_drawing,mp_holistic,holistic,side):
             elif angle<minang:
                 minang=angle
                 minangimage=image
-               
+            
+            calculations(angle)    
             #repetitions
             if angle>120:
                 stage = 0
             elif angle <=60:
                 stage = 1
-        
+            
+            
     except:
         pass
                   
@@ -340,8 +346,9 @@ def progress():
     cv.imwrite('Munimum Angle Photo.jpg', minangimage)
     shutil.move('Minimum Angle Photo.jpg', carpeta_fecha)
        
-def main():  
+def main():
     global t, side, path
+    
     #interfaz
     path=If.main()
     #pygame
