@@ -69,7 +69,7 @@ def angle_calculate(a,b,c,first = None,vi = None,ti = None,):
         vi=v
         print(w)
         print(v)
-    return angle,w,v,first,vi,ti
+    return angle,first,vi,ti
    
 def process(frame,mp_drawing,mp_holistic,holistic,side, first = None,vi = None,ti = None):
     global maxang, minang, maxangimage, minangimage
@@ -101,7 +101,7 @@ def process(frame,mp_drawing,mp_holistic,holistic,side, first = None,vi = None,t
             
             if side == 1:
                 #calculate angle
-                angle,w,v,first,vi,ti = angle_calculate(shoulder_L,elbow_L,wrist_L,first,vi,ti)
+                angle,first,vi,ti = angle_calculate(shoulder_L,elbow_L,wrist_L,first,vi,ti)
                 #look angle
                 cv.putText(image,str(int(angle)),
                            tuple(np.multiply(elbow_L,[647,510]).astype(int)),
@@ -109,7 +109,7 @@ def process(frame,mp_drawing,mp_holistic,holistic,side, first = None,vi = None,t
                                
             else:
                 #calculate angle
-                angle,w,v,first,vi,ti = angle_calculate(shoulder_R,elbow_R,wrist_R,first,vi,ti)
+                angle,first,vi,ti = angle_calculate(shoulder_R,elbow_R,wrist_R,first,vi,ti)
                 
                 #look angle
                 cv.putText(image,str(int(angle)),
@@ -368,7 +368,6 @@ def main():
             
     path=path.replace("\\", "\\\\")
     print(path)
-    
     #pygame
     title_font = py.font.SysFont("georgia", 70)
     run = True

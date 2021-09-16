@@ -8,7 +8,6 @@ import csv
 import shutil
 import pandas as pd
 
-
 global check, carpeta_sesiones
 
 def graldatacsv(data):
@@ -63,7 +62,7 @@ def carpetas(data):
     writer.writerow(info)
     file.close()
 
-def ingresar(root):
+def ingresar(root,control=False):
     global carpeta_sesiones
     root.destroy()
     ingresowindow = tk.Tk()
@@ -72,6 +71,12 @@ def ingresar(root):
     ingresowindow.iconbitmap("sources/icon.ico")
     ingresowindow.geometry("900x600")
     
+    if control:
+        error_label = tk.Label (ingresowindow,text="Usuario no encontrado",font=fontStyle)
+        error_label.pack(expand = True)
+    else: 
+        pass
+
     us_label = tk.Label (ingresowindow,text="Usuario: ",font=fontStyle)
     us_label.pack(expand = True)
     usertext = tk.Entry (ingresowindow,font=fontStyle)
@@ -90,11 +95,15 @@ def ingresar(root):
             i=Users.index(user)
             carpeta_sesiones=Paths[i]
             print(carpeta_sesiones)
+            ingresowindow.destroy()
+
         else:
+            control=True
             print('El username no existe, regístrese primero')
+            ingresar(ingresowindow,control)
             #Aqui va que el nickname no existe y que se vaya a registrar
         
-        ingresowindow.destroy()
+       
         
     def new():
         ingresowindow.destroy()
@@ -102,12 +111,15 @@ def ingresar(root):
     
     accept = tk.Button(ingresowindow, text= "Aceptar", command = users,font=fontStyle,
                     activebackground="#ff7ea8")
-    accept.pack(expand = True)  
+    accept.pack(expand = True)
+    re = tk.Button(ingresowindow, text= "Registrarse", command = lambda: registro(ingresowindow),font=fontStyle,
+                    activebackground="#ff7ea8")
+    re.pack(expand = True)
     back = tk.Button(ingresowindow, text= "Volver al menu", command = new,font=fontStyle,
                     activebackground="#ff7ea8")
     back.pack(expand = True)
        
-def registro(root):
+def registro(root,control=False):
     root.destroy()
     registrowindow = tk.Tk()
     fontStyle = tkFont.Font(family="Georgia", size=15)
@@ -119,7 +131,11 @@ def registro(root):
     name_label.pack(expand = True)
     nametext = tk.Entry (registrowindow,font=fontStyle)
     nametext.pack(expand = True)
-    
+
+    if control:
+        error_label = tk.Label (registrowindow,text="Nombre de usuario no disponible",font=fontStyle)
+        error_label.pack(expand = True)
+
     us_label = tk.Label (registrowindow,text="Usuario: ",font=fontStyle)
     us_label.pack(expand = True)
     usertext = tk.Entry (registrowindow,font=fontStyle)
@@ -151,13 +167,17 @@ def registro(root):
         print(data)
         check=usercontrol(data[1])
         if check==True:
+            registrowindow.destroy()
             carpetas(data)
             graldatacsv(data)
             print(carpeta_sesiones)
+            
         else:
+            control = True
+            registro(registrowindow,control)
             print('Username ya utilizado')
         #Aqui va la pantalla de registro de nuevo
-        registrowindow.destroy()
+        
         
     def new():
         registrowindow.destroy()
@@ -171,8 +191,9 @@ def registro(root):
     back.pack(expand = True)
     
 def main():
-    global caperta_sesiones
+    global caperta_sesiones,control
     root = tk.Tk()
+    control = False
     fontStyle = tkFont.Font(family="Georgia", size=50)
     buttonStyle = tkFont.Font(family="Georgia", size=20)
     root.iconbitmap("sources/icon.ico")
