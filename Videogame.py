@@ -65,7 +65,6 @@ def angle_calculate(a,b,c,first = False):
    
     
 def process(frame,mp_drawing,mp_holistic,holistic,side, first=False):
-    i=0
     global maxang, minang, maxangimage, minangimage
     stage = None
     #cambios de color y aplicar módulo holistic
