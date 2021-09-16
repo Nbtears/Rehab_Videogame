@@ -1,4 +1,5 @@
 import pandas as pd
+from pathlib import Path
 from datetime import datetime
 import csv
 import time 
@@ -7,6 +8,8 @@ import cv2 as cv
 import pygame as py
 import mediapipe as mp
 import Interfaz as If
+import shutil
+
 
 py.font.init()
 side = None
@@ -37,8 +40,7 @@ enemy_image = py.transform.scale(enemy_image,(enemy_dimension,enemy_dimension))
 right_image = py.image.load('sources/right.png')
 left_image = py.image.load('sources/left.png')
 
-
-def angle_calculate(a,b,c):
+def angle_calculate(a,b,c,i):
     
     a = np.array(a)
     b = np.array(b)
@@ -49,11 +51,20 @@ def angle_calculate(a,b,c):
     
     if angle > 180.0:
         angle=360-angle
+        
+    tf=(py.time.get_ticks()/1000)
     
-    return angle   
-
+    while i==0:
+        print("d")
+        i+=1
+    print("hi")
+    
+    return angle  
+   
+    
 def process(frame,mp_drawing,mp_holistic,holistic,side):
-    global maxang, minang
+    i=0
+    global maxang, minang, maxangimage, minangimage
     stage = None
     #cambios de color y aplicar módulo holistic
     image = cv.cvtColor(frame,cv.COLOR_RGB2BGR)
@@ -82,16 +93,15 @@ def process(frame,mp_drawing,mp_holistic,holistic,side):
             
             if side == 1:
                 #calculate angle
-                angle = angle_calculate(shoulder_L,elbow_L,wrist_L)
-                
+                angle = angle_calculate(shoulder_L,elbow_L,wrist_L,i)
                 #look angle
                 cv.putText(image,str(int(angle)),
                            tuple(np.multiply(elbow_L,[647,510]).astype(int)),
                                  cv.FONT_HERSHEY_SIMPLEX,0.8,(255,255,255),2,cv.LINE_AA)
+
             else:
                 #calculate angle
-                angle = angle_calculate(shoulder_R,elbow_R,wrist_R)
-            
+                angle = angle_calculate(shoulder_R,elbow_R,wrist_R,i)
                 
                 #look angle
                 cv.putText(image,str(angle),
@@ -99,15 +109,17 @@ def process(frame,mp_drawing,mp_holistic,holistic,side):
                                  cv.FONT_HERSHEY_SIMPLEX,0.5,(255,255,255),2,cv.LINE_AA)
             if angle>maxang:
                 maxang=angle
+                maxangimage=image
             elif angle<minang:
                 minang=angle
-                
+                minangimage=image
+               
             #repetitions
             if angle>120:
                 stage = 0
             elif angle <=60:
                 stage = 1
-            
+        
     except:
         pass
                   
@@ -301,7 +313,9 @@ def game(side):
     cv.destroyAllWindows()           
 
 def progress():
-    global minang, maxang,t, side
+    global minang, maxang, t, side, maxangimage, minangimage, path
+    carpeta_fecha = path + '\\' + datetime.now().strftime("%d/%m/%Y")
+    Path(carpeta_fecha).mkdir(exist_ok=True)
     
     if side==0:
         arm='Left'
@@ -309,23 +323,27 @@ def progress():
         arm='Right'
         
     elapsed = time.time()-t
-    file=open("PROGRESO.csv","a",newline="")
+    file=open("Progress.csv","a",newline="")
     writer=csv.writer(file)
     try:
-        pd.read_csv('PROGRESO.csv')
+        pd.read_csv("Progress.csv")
     except:
         writer.writerow(['Date','Session duration (s)','Chosen arm', 'Min. angle','Max. angle'])
             
     date = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
     info=(date,elapsed,arm,minang,maxang)
     writer.writerow(info)
-    file.close()  
+    file.close()
+    shutil.move('Progress.csv', path)
+    cv.imwrite('Maximum Angle Photo.jpg', maxangimage)
+    shutil.move('Maximum Angle Photo.jpg', carpeta_fecha)
+    cv.imwrite('Munimum Angle Photo.jpg', minangimage)
+    shutil.move('Minimum Angle Photo.jpg', carpeta_fecha)
        
-def main():
-    global t, side
-    
+def main():  
+    global t, side, path
     #interfaz
-    If.main()
+    path=If.main()
     #pygame
     title_font = py.font.SysFont("georgia", 70)
     run = True
