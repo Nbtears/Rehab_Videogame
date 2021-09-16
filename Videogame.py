@@ -10,7 +10,6 @@ import mediapipe as mp
 import Interfaz as If
 import shutil
 
-
 py.font.init()
 side = None
 score = 0
@@ -40,8 +39,7 @@ enemy_image = py.transform.scale(enemy_image,(enemy_dimension,enemy_dimension))
 right_image = py.image.load('sources/right.png')
 left_image = py.image.load('sources/left.png')
 
-def angle_calculate(a,b,c,first = False):
-    global ai,ti
+def angle_calculate(a,b,c,first = None,vi = None,ti = None):
     # print("Caculando el angulo...")
     a = np.array(a)
     b = np.array(b)
@@ -55,23 +53,25 @@ def angle_calculate(a,b,c,first = False):
         
     tf=(py.time.get_ticks()/1000)
     
-    if first:
-        ai=angle
+    if first==None:
+        first = angle
         ti=tf
         vi= angle-angle/tf-tf
         print("Es el primero!")
-        first = False
+        print(vi)
     else:
         print("No es el primero")
-        v= angle-ai/tf-ti
-        print(v)
-        ai=angle
+        v= angle-first/tf-ti
+        w=(v-vi)/tf
+        first=angle
         ti=tf
-    
-    return angle, first
+        vi=v
+        print(w)
+        print(v)
+    return angle, first,vi,ti
    
-    
-def process(frame,mp_drawing,mp_holistic,holistic,side, first=False):
+ 
+def process(frame,mp_drawing,mp_holistic,holistic,side, first = None,vi = None,ti = None):
     global maxang, minang, maxangimage, minangimage
     stage = None
     #cambios de color y aplicar módulo holistic
@@ -101,7 +101,7 @@ def process(frame,mp_drawing,mp_holistic,holistic,side, first=False):
             
             if side == 1:
                 #calculate angle
-                angle, first = angle_calculate(shoulder_L,elbow_L,wrist_L,first)
+                angle, first,vi,ti = angle_calculate(shoulder_L,elbow_L,wrist_L,first,vi,ti)
                 #look angle
                 cv.putText(image,str(int(angle)),
                            tuple(np.multiply(elbow_L,[647,510]).astype(int)),
@@ -109,7 +109,7 @@ def process(frame,mp_drawing,mp_holistic,holistic,side, first=False):
 
             else:
                 #calculate angle
-                angle, first = angle_calculate(shoulder_R,elbow_R,wrist_R,first)
+                angle, first,vi,ti = angle_calculate(shoulder_R,elbow_R,wrist_R,first,vi,ti)
                 
                 #look angle
                 cv.putText(image,str(angle),
@@ -136,7 +136,7 @@ def process(frame,mp_drawing,mp_holistic,holistic,side, first=False):
                               mp_drawing.DrawingSpec(color = (102,31,208),thickness = 2,circle_radius = 2),
                               mp_drawing.DrawingSpec(color = (103,249,237),thickness = 2,circle_radius = 2))
             
-    return image,stage, first
+    return image,stage, first,vi,ti
             
 
 class axolote:
@@ -230,7 +230,9 @@ def collide(obj1, obj2):
 def game(side):
     
     print("Empezando juego...")
-    first = True
+    first = None
+    vi= None
+    ti = None
     fps = 60
     clock=py.time.Clock()
     run = True
@@ -270,7 +272,7 @@ def game(side):
                 screen.blit(progress1_label,(WIDTH/2-progress1_label.get_width()/2,450))
                 screen.blit(progress2_label,(WIDTH/2-progress2_label.get_width()/2,500))
                 py.display.update()
-                progress()
+                #progress()
                 c=1
             
         else:
@@ -309,7 +311,7 @@ def game(side):
             clock.tick(fps)
             data,frame = capture.read()
             frame=cv.flip(frame, 1)
-            imag,stage,first = process(frame,mp_drawing,mp_holistic,holistic,side,first)
+            imag,stage,first,vi,ti = process(frame,mp_drawing,mp_holistic,holistic,side,first,vi,ti)
             
             cv.imshow('camera',imag)
             
@@ -321,7 +323,7 @@ def game(side):
                             
     capture.release() 
     cv.destroyAllWindows()           
-
+"""""
 def progress():
     global minang, maxang, t, side, maxangimage, minangimage, path
     carpeta_fecha = path + '\\' + datetime.now().strftime("%d/%m/%Y")
@@ -349,18 +351,18 @@ def progress():
     shutil.move('Maximum Angle Photo.jpg', carpeta_fecha)
     cv.imwrite('Munimum Angle Photo.jpg', minangimage)
     shutil.move('Minimum Angle Photo.jpg', carpeta_fecha)
-       
+  """     
 def main():  
     global t, side, path
     
-      #interfaz
+    """  #interfaz
     r=True
     while r==True:
         path=If.main()
         if path!=0:
             r=False
-    
-    print(path)
+    """
+    #print(path)
     #pygame
     title_font = py.font.SysFont("georgia", 70)
     run = True
