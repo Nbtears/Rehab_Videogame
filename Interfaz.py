@@ -57,7 +57,6 @@ def carpetas(data):
     try:
         pd.read_csv('Users.csv')
     except:
-        print('d')
         writer.writerow(['Name','User','Path'])
         
     info=(data[0], data[1], carpeta_sesiones)
@@ -94,7 +93,6 @@ def ingresar(root,control=False):
             Users=values.User.tolist()
             i=Users.index(user)
             carpeta_sesiones=Paths[i]
-            print(carpeta_sesiones)
             ingresowindow.destroy()
 
         else:
@@ -163,13 +161,11 @@ def registro(root,control=False):
         lesion = lestext.get()
         clinic = cltext.get()
         data=[name,user,age,lesion,clinic]
-        print(data)
         check=usercontrol(data[1])
         if check==True:
             registrowindow.destroy()
             carpetas(data)
             graldatacsv(data)
-            print(carpeta_sesiones)
             
         else:
             control = True

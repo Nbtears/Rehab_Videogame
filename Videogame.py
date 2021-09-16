@@ -60,10 +60,8 @@ def angle_calculate(a,b,c,first = None,vi = None,ti = None,):
         first = angle
         ti=tf
         vi=(angle-angle)/(tf-tf)
-        print("Es el primero!")
-        print(vi)
+
     else:
-        print("No es el primero")
         v= (angle-first)/(tf-ti)
         w=(v-vi)/tf
         first=angle
@@ -74,11 +72,6 @@ def angle_calculate(a,b,c,first = None,vi = None,ti = None,):
                 maxv=v    
         if w>maxw:
                 maxw=w 
-                
-        print(w)
-        print(v)
-        
-        
     return angle,first,vi,ti
    
 def process(frame,mp_drawing,mp_holistic,holistic,side, first = None,vi = None,ti = None):
