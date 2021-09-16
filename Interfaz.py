@@ -44,11 +44,11 @@ def carpetas(data):
     s='\\'
     a_string = os.getcwd()
     new_string = a_string.replace(os.path.basename(os.getcwd()), "")
-    carpeta=new_string + 'Expedientes'
+    carpeta=new_string + 'Medical records'
     Path(carpeta).mkdir(exist_ok=True)
     carpeta_usuario = carpeta + s + data[0]
     Path(carpeta_usuario).mkdir(exist_ok=True)
-    carpeta_sesiones=carpeta_usuario + s +'Sesiones'
+    carpeta_sesiones=carpeta_usuario + s +'Sesions'
     Path(carpeta_sesiones).mkdir(exist_ok=True)
     
     #Almacenar en csv el nickname, nombre y path
@@ -57,7 +57,9 @@ def carpetas(data):
     try:
         pd.read_csv('Users.csv')
     except:
+        print('d')
         writer.writerow(['Name','User','Path'])
+        
     info=(data[0], data[1], carpeta_sesiones)
     writer.writerow(info)
     file.close()
@@ -67,17 +69,15 @@ def ingresar(root,control=False):
     root.destroy()
     ingresowindow = tk.Tk()
     fontStyle = tkFont.Font(family="Georgia", size=15)
-    ingresowindow.title("Ingresar")
+    ingresowindow.title("Log in")
     ingresowindow.iconbitmap("sources/icon.ico")
     ingresowindow.geometry("900x600")
     
     if control:
-        error_label = tk.Label (ingresowindow,text="Usuario no encontrado",font=fontStyle)
+        error_label = tk.Label (ingresowindow,text="Username not found",font=fontStyle,fg="#ff0080")
         error_label.pack(expand = True)
-    else: 
-        pass
 
-    us_label = tk.Label (ingresowindow,text="Usuario: ",font=fontStyle)
+    us_label = tk.Label (ingresowindow,text="Username: ",font=fontStyle)
     us_label.pack(expand = True)
     usertext = tk.Entry (ingresowindow,font=fontStyle)
     usertext.pack(expand = True)
@@ -99,7 +99,6 @@ def ingresar(root,control=False):
 
         else:
             control=True
-            print('El username no existe, regístrese primero')
             ingresar(ingresowindow,control)
             #Aqui va que el nickname no existe y que se vaya a registrar
         
@@ -109,13 +108,13 @@ def ingresar(root,control=False):
         ingresowindow.destroy()
         main()
     
-    accept = tk.Button(ingresowindow, text= "Aceptar", command = users,font=fontStyle,
+    accept = tk.Button(ingresowindow, text= "Log in", command = users,font=fontStyle,
                     activebackground="#ff7ea8")
     accept.pack(expand = True)
-    re = tk.Button(ingresowindow, text= "Registrarse", command = lambda: registro(ingresowindow),font=fontStyle,
+    re = tk.Button(ingresowindow, text= "Sign up", command = lambda: registro(ingresowindow),font=fontStyle,
                     activebackground="#ff7ea8")
     re.pack(expand = True)
-    back = tk.Button(ingresowindow, text= "Volver al menu", command = new,font=fontStyle,
+    back = tk.Button(ingresowindow, text= "Menu", command = new,font=fontStyle,
                     activebackground="#ff7ea8")
     back.pack(expand = True)
        
@@ -123,25 +122,25 @@ def registro(root,control=False):
     root.destroy()
     registrowindow = tk.Tk()
     fontStyle = tkFont.Font(family="Georgia", size=15)
-    registrowindow.title("Registro")
+    registrowindow.title("Sign up")
     registrowindow.iconbitmap("sources/icon.ico")
     registrowindow.geometry("900x600")
     
-    name_label = tk.Label (registrowindow,text="Nombre: ",font=fontStyle)
+    name_label = tk.Label (registrowindow,text="Full name: ",font=fontStyle)
     name_label.pack(expand = True)
     nametext = tk.Entry (registrowindow,font=fontStyle)
     nametext.pack(expand = True)
 
     if control:
-        error_label = tk.Label (registrowindow,text="Nombre de usuario no disponible",font=fontStyle)
+        error_label = tk.Label (registrowindow,text="Username not available",font=fontStyle,fg="#ff0080")
         error_label.pack(expand = True)
 
-    us_label = tk.Label (registrowindow,text="Usuario: ",font=fontStyle)
+    us_label = tk.Label (registrowindow,text="Username: ",font=fontStyle)
     us_label.pack(expand = True)
     usertext = tk.Entry (registrowindow,font=fontStyle)
     usertext.pack(expand = True)
     
-    y_label = tk.Label (registrowindow,text="Edad: ",font=fontStyle)
+    y_label = tk.Label (registrowindow,text="Age: ",font=fontStyle)
     y_label.pack(expand = True)
     ytext = tk.Entry (registrowindow,font=fontStyle)
     ytext.pack(expand = True)
@@ -151,7 +150,7 @@ def registro(root,control=False):
     lestext = tk.Entry (registrowindow,font=fontStyle)
     lestext.pack(expand = True)
     
-    cl_label = tk.Label (registrowindow,text="Clínica: ",font=fontStyle)
+    cl_label = tk.Label (registrowindow,text="Clinic: ",font=fontStyle)
     cl_label.pack(expand = True)
     cltext = tk.Entry (registrowindow,font=fontStyle)
     cltext.pack(expand = True)
@@ -175,18 +174,16 @@ def registro(root,control=False):
         else:
             control = True
             registro(registrowindow,control)
-            print('Username ya utilizado')
         #Aqui va la pantalla de registro de nuevo
-        
         
     def new():
         registrowindow.destroy()
         main()
     
-    accept = tk.Button(registrowindow, text= "Guardar", command = get_data, 
+    accept = tk.Button(registrowindow, text= "Save", command = get_data, 
                     activebackground="#ff7ea8",font=fontStyle)
     accept.pack(expand = True)
-    back = tk.Button(registrowindow, text= "Volver al menu", command = new,font=fontStyle,
+    back = tk.Button(registrowindow, text= "Menu", command = new,font=fontStyle,
                     activebackground="#ff7ea8")
     back.pack(expand = True)
     
@@ -207,9 +204,9 @@ def main():
     lbl = tk.Label(root,image=imag)
     lbl.pack(expand=True)
     
-    IngBt = tk.Button(root,text = "Iniciar sesión", command = lambda: ingresar(root), 
+    IngBt = tk.Button(root,text = "Log in", command = lambda: ingresar(root), 
                   activebackground="#ff7ea8",font=buttonStyle)
-    RegBt = tk.Button(root,text = "Registrarse", command = lambda: registro(root),
+    RegBt = tk.Button(root,text = "Sign up", command = lambda: registro(root),
                   activebackground="#ff7ea8",font=buttonStyle)
     IngBt.pack(side=tk.BOTTOM, expand = True)
     RegBt.pack(side=tk.BOTTOM, expand = True)

@@ -10,7 +10,8 @@ import pygame as py
 import mediapipe as mp
 import Interfaz as If
 import shutil
-
+maxv=-1000
+maxw=-1000
 py.font.init()
 side = None
 score = 0
@@ -41,6 +42,7 @@ right_image = py.image.load('sources/right.png')
 left_image = py.image.load('sources/left.png')
 
 def angle_calculate(a,b,c,first = None,vi = None,ti = None,):
+    global maxv, maxw
     # print("Caculando el angulo...")
     a = np.array(a)
     b = np.array(b)
@@ -57,18 +59,26 @@ def angle_calculate(a,b,c,first = None,vi = None,ti = None,):
     if first==None:
         first = angle
         ti=tf
-        vi= angle-angle/tf-tf
+        vi=(angle-angle)/(tf-tf)
         print("Es el primero!")
         print(vi)
     else:
         print("No es el primero")
-        v= angle-first/tf-ti
+        v= (angle-first)/(tf-ti)
         w=(v-vi)/tf
         first=angle
         ti=tf
         vi=v
+        
+        if v>maxv:
+                maxv=v    
+        if w>maxw:
+                maxw=w 
+                
         print(w)
         print(v)
+        
+        
     return angle,first,vi,ti
    
 def process(frame,mp_drawing,mp_holistic,holistic,side, first = None,vi = None,ti = None):
@@ -273,7 +283,7 @@ def game(side):
                 screen.blit(progress1_label,(WIDTH/2-progress1_label.get_width()/2,450))
                 screen.blit(progress2_label,(WIDTH/2-progress2_label.get_width()/2,500))
                 py.display.update()
-                #progress()
+                progress()
                 c=1
             
         else:
@@ -326,7 +336,7 @@ def game(side):
     cv.destroyAllWindows()           
 
 def progress():
-    global minang, maxang, t, side, maxangimage, minangimage, path
+    global minang, maxang, t, side, maxangimage, minangimage, path,maxv, maxw
     q=str(len(os.listdir(path))+1)
     
     s='\\'
@@ -344,16 +354,16 @@ def progress():
     try:
         pd.read_csv("Progress.csv")
     except:
-        writer.writerow(['Date','Session duration (s)','Chosen arm', 'Min. angle','Max. angle'])
+        writer.writerow(['Date','Session duration (s)','Chosen arm', 'Min. angle','Max. angle','Max. velocity','Max. acceleration'])
             
     date = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-    info=(date,elapsed,arm,minang,maxang)
+    info=(date,elapsed,arm,minang,maxang,maxv, maxw)
     writer.writerow(info)
     file.close()
     shutil.move('Progress.csv', carpeta_fecha)
     cv.imwrite('Maximum Angle Photo.jpg', maxangimage)
     shutil.move('Maximum Angle Photo.jpg', carpeta_fecha)
-    cv.imwrite('Munimum Angle Photo.jpg', minangimage)
+    cv.imwrite('Minimum Angle Photo.jpg', minangimage)
     shutil.move('Minimum Angle Photo.jpg', carpeta_fecha)
      
 def main():  
