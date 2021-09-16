@@ -40,7 +40,7 @@ enemy_image = py.transform.scale(enemy_image,(enemy_dimension,enemy_dimension))
 right_image = py.image.load('sources/right.png')
 left_image = py.image.load('sources/left.png')
 
-def angle_calculate(a,b,c,image,first = None,vi = None,ti = None,):
+def angle_calculate(a,b,c,first = None,vi = None,ti = None,):
     # print("Caculando el angulo...")
     a = np.array(a)
     b = np.array(b)
@@ -101,32 +101,20 @@ def process(frame,mp_drawing,mp_holistic,holistic,side, first = None,vi = None,t
             
             if side == 1:
                 #calculate angle
-                angle,w,v,first,vi,ti = angle_calculate(shoulder_L,elbow_L,wrist_L,image,first,vi,ti)
+                angle,w,v,first,vi,ti = angle_calculate(shoulder_L,elbow_L,wrist_L,first,vi,ti)
                 #look angle
                 cv.putText(image,str(int(angle)),
                            tuple(np.multiply(elbow_L,[647,510]).astype(int)),
                                  cv.FONT_HERSHEY_SIMPLEX,0.8,(255,255,255),2,cv.LINE_AA)
-
-                cv.putText(image,str(v),tuple(800,550),
-                                cv.FONT_HERSHEY_SIMPLEX,0.5,(255,255,255),2,cv.LINE_AA)
-
-                cv.putText(image,str(w),tuple(20,20),
-                               cv.FONT_HERSHEY_SIMPLEX,0.5,(255,255,255),2,cv.LINE_AA)
                                
             else:
                 #calculate angle
-                angle,w,v,first,vi,ti = angle_calculate(shoulder_R,elbow_R,wrist_R,image,first,vi,ti)
+                angle,w,v,first,vi,ti = angle_calculate(shoulder_R,elbow_R,wrist_R,first,vi,ti)
                 
                 #look angle
                 cv.putText(image,str(int(angle)),
                            tuple(np.multiply(elbow_R,[647,510]).astype(int)),
                                  cv.FONT_HERSHEY_SIMPLEX,0.5,(255,255,255),2,cv.LINE_AA)
-
-                cv.putText(image,str(v),tuple(800,550),
-                                cv.FONT_HERSHEY_SIMPLEX,0.5,(255,255,255),2,cv.LINE_AA)
-
-                cv.putText(image,str(w),tuple(20,20),
-                               cv.FONT_HERSHEY_SIMPLEX,0.5,(255,255,255),2,cv.LINE_AA)
         
             if angle>maxang:
                 maxang=angle
