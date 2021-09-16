@@ -124,5 +124,6 @@ def main():
     IngBt.pack(side=tk.BOTTOM, expand = True)
     RegBt.pack(side=tk.BOTTOM, expand = True)
     root.mainloop()
-       
-main()
+
+if __name__ == "__main__": 
+    main()

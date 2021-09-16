@@ -40,8 +40,9 @@ enemy_image = py.transform.scale(enemy_image,(enemy_dimension,enemy_dimension))
 right_image = py.image.load('sources/right.png')
 left_image = py.image.load('sources/left.png')
 
-def angle_calculate(a,b,c,i):
+def angle_calculate(a,b,c,first = False):
     
+    # print("Caculando el angulo...")
     a = np.array(a)
     b = np.array(b)
     c = np.array(c)
@@ -54,15 +55,16 @@ def angle_calculate(a,b,c,i):
         
     tf=(py.time.get_ticks()/1000)
     
-    while i==0:
-        print("d")
-        i+=1
-    print("hi")
+    if first:
+        print("Es el primero!")
+        first = False
+    else:
+        print("No es el primero")
     
-    return angle  
+    return angle, first
    
     
-def process(frame,mp_drawing,mp_holistic,holistic,side):
+def process(frame,mp_drawing,mp_holistic,holistic,side, first=False):
     i=0
     global maxang, minang, maxangimage, minangimage
     stage = None
@@ -93,7 +95,7 @@ def process(frame,mp_drawing,mp_holistic,holistic,side):
             
             if side == 1:
                 #calculate angle
-                angle = angle_calculate(shoulder_L,elbow_L,wrist_L,i)
+                angle, first = angle_calculate(shoulder_L,elbow_L,wrist_L,first)
                 #look angle
                 cv.putText(image,str(int(angle)),
                            tuple(np.multiply(elbow_L,[647,510]).astype(int)),
@@ -101,7 +103,7 @@ def process(frame,mp_drawing,mp_holistic,holistic,side):
 
             else:
                 #calculate angle
-                angle = angle_calculate(shoulder_R,elbow_R,wrist_R,i)
+                angle, first = angle_calculate(shoulder_R,elbow_R,wrist_R,first)
                 
                 #look angle
                 cv.putText(image,str(angle),
@@ -128,7 +130,7 @@ def process(frame,mp_drawing,mp_holistic,holistic,side):
                               mp_drawing.DrawingSpec(color = (102,31,208),thickness = 2,circle_radius = 2),
                               mp_drawing.DrawingSpec(color = (103,249,237),thickness = 2,circle_radius = 2))
             
-    return image,stage
+    return image,stage, first
             
 
 class axolote:
@@ -221,6 +223,8 @@ def collide(obj1, obj2):
 
 def game(side):
     
+    print("Empezando juego...")
+    first = True
     fps = 60
     clock=py.time.Clock()
     run = True
@@ -285,7 +289,7 @@ def game(side):
                          
             enemies.draw(screen)
             enemies.update()
-            if enemies.collision(player):
+            if enemies.collision(player): 
                 sound_dead.play()
                 enemies.delete()
                 lives -= 1
@@ -299,7 +303,7 @@ def game(side):
             clock.tick(fps)
             data,frame = capture.read()
             frame=cv.flip(frame, 1)
-            imag,stage = process(frame,mp_drawing,mp_holistic,holistic,side)
+            imag,stage,first = process(frame,mp_drawing,mp_holistic,holistic,side,first)
             
             cv.imshow('camera',imag)
             
