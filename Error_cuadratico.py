@@ -69,11 +69,13 @@ def Mistake_calculation(y_true,y_pred):
 
     print("Error Cuadrático Medio", mse)
 
-    plt.title("Error Cuadrático Medio")
+    plt.title("Root Mean Square Error")
     plt.plot(y_true,y_true,'r',label="Referencia")
     plt.plot(y_true, y_pred,'bo',label="Datos obtenidos")
-    plt.ylabel('Angulo obtenido')
-    plt.xlabel('Ángulo real') 
+    plt.ylabel('Predicted angle')
+    plt.xlabel('Actual angle')
+    plt.text(30,100,"RMSE = "+str(f"{mse:.2f}"),fontsize=18)
+    plt.show
     
     
 def main(): 
